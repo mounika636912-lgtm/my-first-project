@@ -1,0 +1,216 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Expense Tracker</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 25px;
+      font-family: Arial, sans-serif;
+      background: #f3f5f9;
+      color: #222;
+    }
+    .container { max-width: 850px; margin: auto; }
+    h1 { color: #263b68; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .card, .panel {
+      background: white;
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px #0000000b;
+    }
+    .card p { margin-bottom: 5px; color: #666; }
+    .card h2 { font-size: 20px; overflow-wrap: anywhere; }
+    .income { color: #168451; }
+    .expense { color: #d64747; }
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin: 7px 0;
+      border: 1px solid #d8dce5;
+      border-radius: 7px;
+      font-size: 15px;
+    }
+    button {
+      background: #263b68;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+    .transaction {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #eee;
+      padding: 12px 0;
+    }
+    .transaction button {
+      width: auto;
+      padding: 8px 10px;
+      background: #d64747;
+    }
+    @media (max-width: 550px) {
+      body { padding: 14px; }
+      .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>My Expense Tracker</h1>
+    <p>Track your money, one day at a time.</p>
+
+    <section class="cards">
+      <div class="card">
+        <p>Total Income</p>
+        <h2 class="income" id="income">₹0.00</h2>
+      </div>
+      <div class="card">
+        <p>Total Expenses</p>
+        <h2 class="expense" id="expenses">₹0.00</h2>
+      </div>
+      <div class="card">
+        <p>Available Balance</p>
+        <h2 id="balance">₹0.00</h2>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Add Transaction</h2>
+      <form id="transactionForm">
+        <input id="description" placeholder="Description (e.g. Books)" required>
+        <input id="amount" type="number" min="0.01" step="0.01"
+          placeholder="Amount (₹)" required>
+        <select id="type">
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+        </select>
+        <select id="category">
+          <option>Food</option>
+          <option>Travel</option>
+          <option>Education</option>
+          <option>Shopping</option>
+          <option>Bills</option>
+          <option>Salary</option>
+          <option>Other</option>
+        </select>
+        <input id="date" type="date" required>
+        <button type="submit">Add Transaction</button>
+      </form>
+    </section>
+
+    <section class="panel" style="margin-top:20px">
+      <h2>Transaction History</h2>
+      <div id="transactionList">No transactions yet.</div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById("transactionForm");
+    const list = document.getElementById("transactionList");
+    const dateInput = document.getElementById("date");
+
+    dateInput.value = new Date().toLocaleDateString("en-CA");
+
+    let transactions = JSON.parse(
+      localStorage.getItem("myExpenseData") || "[]"
+    );
+
+    function render() {
+      const income = transactions
+        .filter(t => t.type === "income")
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      const expenses = transactions
+        .filter(t => t.type === "expense")
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      document.getElementById("income").textContent =
+        "₹" + income.toFixed(2);
+      document.getElementById("expenses").textContent =
+        "₹" + expenses.toFixed(2);
+      document.getElementById("balance").textContent =
+        "₹" + (income - expenses).toFixed(2);
+
+      list.replaceChildren();
+
+      if (transactions.length === 0) {
+        list.textContent = "No transactions yet.";
+        return;
+      }
+
+      [...transactions].reverse().forEach(t => {
+        const row = document.createElement("div");
+        row.className = "transaction";
+
+        const details = document.createElement("div");
+        const title = document.createElement("strong");
+        title.textContent = t.description;
+
+        const info = document.createElement("div");
+        info.textContent = `${t.category} • ${t.date}`;
+
+        details.append(title, info);
+
+        const amount = document.createElement("span");
+        amount.className = t.type;
+        amount.textContent =
+          (t.type === "income" ? "+" : "-") + "₹" + t.amount.toFixed(2);
+
+        const remove = document.createElement("button");
+        remove.textContent = "Delete";
+        remove.type = "button";
+        remove.addEventListener("click", () => {
+          transactions = transactions.filter(item => item.id !== t.id);
+          save();
+        });
+
+        row.append(details, amount, remove);
+        list.append(row);
+      });
+    }
+
+    function save() {
+      localStorage.setItem("myExpenseData", JSON.stringify(transactions));
+      render();
+    }
+
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+
+      const amount = Number(document.getElementById("amount").value);
+      const description = document.getElementById("description").value.trim();
+
+      if (!description || !Number.isFinite(amount) || amount <= 0) {
+        alert("Enter a description and a valid positive amount.");
+        return;
+      }
+
+      transactions.push({
+        id: crypto.randomUUID(),
+        description,
+        amount,
+        type: document.getElementById("type").value,
+        category: document.getElementById("category").value,
+        date: dateInput.value
+      });
+
+      save();
+      form.reset();
+      dateInput.value = new Date().toLocaleDateString("en-CA");
+    });
+
+    render();
+  </script>
+</body>
+</html>
