@@ -1,12 +1,16 @@
-
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Expense Tracker</title>
+
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       padding: 25px;
@@ -14,24 +18,48 @@
       background: #f3f5f9;
       color: #222;
     }
-    .container { max-width: 850px; margin: auto; }
-    h1 { color: #263b68; }
+
+    .container {
+      max-width: 850px;
+      margin: auto;
+    }
+
+    h1 {
+      color: #263b68;
+    }
+
     .cards {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
       margin: 20px 0;
     }
+
     .card, .panel {
       background: white;
       padding: 18px;
       border-radius: 12px;
       box-shadow: 0 2px 10px #0000000b;
     }
-    .card p { margin-bottom: 5px; color: #666; }
-    .card h2 { font-size: 20px; overflow-wrap: anywhere; }
-    .income { color: #168451; }
-    .expense { color: #d64747; }
+
+    .card p {
+      margin-bottom: 5px;
+      color: #666;
+    }
+
+    .card h2 {
+      font-size: 20px;
+      overflow-wrap: anywhere;
+    }
+
+    .income {
+      color: #168451;
+    }
+
+    .expense {
+      color: #d64747;
+    }
+
     input, select, button {
       width: 100%;
       padding: 12px;
@@ -40,12 +68,18 @@
       border-radius: 7px;
       font-size: 15px;
     }
+
     button {
       background: #263b68;
       color: white;
       cursor: pointer;
       border: none;
     }
+
+    button:hover {
+      background: #354f86;
+    }
+
     .transaction {
       display: flex;
       justify-content: space-between;
@@ -54,86 +88,202 @@
       border-bottom: 1px solid #eee;
       padding: 12px 0;
     }
+
     .transaction button {
       width: auto;
       padding: 8px 10px;
       background: #d64747;
+      flex-shrink: 0;
     }
+
+    .transaction-details {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    /* Pie chart styles */
+
+    .chart-subtitle {
+      color: #666;
+      margin-bottom: 25px;
+    }
+
+    .chart-layout {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 35px;
+      padding: 12px 0;
+    }
+
+    .pie-chart {
+      width: 240px;
+      height: 240px;
+      min-width: 240px;
+      border-radius: 50%;
+      background: #e9edf5;
+      box-shadow: 0 3px 12px #00000012;
+    }
+
+    .chart-legend {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 17px 0;
+      font-size: 14px;
+    }
+
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      min-width: 14px;
+      border-radius: 4px;
+    }
+
+    .legend-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .legend-name {
+      display: block;
+      font-weight: bold;
+      overflow-wrap: anywhere;
+    }
+
+    .legend-percentage {
+      display: block;
+      color: #777;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .legend-amount {
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .chart-total {
+      text-align: center;
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid #eee;
+      color: #666;
+    }
+
+    .chart-total strong {
+      display: block;
+      color: #263b68;
+      font-size: 22px;
+      margin-top: 7px;
+    }
+
+    .chart-empty {
+      padding: 12px 0;
+      color: #777;
+      text-align: center;
+    }
+
     @media (max-width: 550px) {
-      body { padding: 14px; }
-      .cards { grid-template-columns: 1fr; }
+      body {
+        padding: 14px;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-layout {
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .pie-chart {
+        width: 210px;
+        height: 210px;
+        min-width: 210px;
+      }
+
+      .chart-legend {
+        width: 100%;
+      }
+
+      .transaction {
+        flex-wrap: wrap;
+      }
     }
-    .chart-row {
-  margin: 18px 0;
-}
-
-.chart-label {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 7px;
-  font-size: 14px;
-}
-
-.chart-track {
-  width: 100%;
-  height: 12px;
-  background: #e9edf5;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.chart-bar {
-  height: 100%;
-  background: #526fe0;
-  border-radius: 10px;
-  transition: width 0.3s ease;
-}
-
-.chart-empty {
-  padding: 20px 0;
-  color: #777;
-}
-
   </style>
 </head>
+
 <body>
   <main class="container">
+
     <h1>My Expense Tracker</h1>
     <p>Track your money, one day at a time.</p>
+
+    <!-- Summary cards -->
 
     <section class="cards">
       <div class="card">
         <p>Total Income</p>
         <h2 class="income" id="income">₹0.00</h2>
       </div>
+
       <div class="card">
         <p>Total Expenses</p>
         <h2 class="expense" id="expenses">₹0.00</h2>
       </div>
+
       <div class="card">
         <p>Available Balance</p>
         <h2 id="balance">₹0.00</h2>
       </div>
     </section>
 
-    <section class="panel">
+    <!-- Pie chart -->
+
+    <section class="panel" style="margin-bottom:20px">
+      <h2>Monthly Expense Chart</h2>
+      <p class="chart-subtitle">
+        Category-wise spending overview
+      </p>
+
+      <div id="expenseChart">
+        <p class="chart-empty">Loading chart...</p>
+      </div>
+    </section>
+
+    <!-- Add transaction -->
+
+    <section class="panel" style="margin-bottom:20px">
       <h2>Add Transaction</h2>
-      
-<section class="panel" style="margin-bottom:20px">
-  <h2>Monthly Expense Chart</h2>
-  <p style="color:#666">Category-wise spending overview</p>
-  <div id="expenseChart"></div>
-</section>
 
       <form id="transactionForm">
-        <input id="description" placeholder="Description (e.g. Books)" required>
-        <input id="amount" type="number" min="0.01" step="0.01"
-          placeholder="Amount (₹)" required>
+        <input
+          id="description"
+          placeholder="Description (e.g. Books)"
+          required
+        >
+
+        <input
+          id="amount"
+          type="number"
+          min="0.01"
+          step="0.01"
+          placeholder="Amount (₹)"
+          required
+        >
+
         <select id="type">
           <option value="expense">Expense</option>
           <option value="income">Income</option>
         </select>
+
         <select id="category">
           <option>Food</option>
           <option>Travel</option>
@@ -143,168 +293,322 @@
           <option>Salary</option>
           <option>Other</option>
         </select>
+
         <input id="date" type="date" required>
+
         <button type="submit">Add Transaction</button>
       </form>
     </section>
 
-    <section class="panel" style="margin-top:20px">
+    <!-- Transaction history -->
+
+    <section class="panel">
       <h2>Transaction History</h2>
       <div id="transactionList">No transactions yet.</div>
     </section>
+
   </main>
 
   <script>
-    const form = document.getElementById("transactionForm");
-    const list = document.getElementById("transactionList");
-    const dateInput = document.getElementById("date");
+    (() => {
+      const form = document.getElementById("transactionForm");
+      const list = document.getElementById("transactionList");
+      const dateInput = document.getElementById("date");
+      const chart = document.getElementById("expenseChart");
 
-    dateInput.value = new Date().toLocaleDateString("en-CA");
-
-    let transactions = JSON.parse(
-      localStorage.getItem("myExpenseData") || "[]"
-    );
-
-function renderChart() {
-  const chart = document.getElementById("expenseChart");
-  chart.replaceChildren();
-
-  const totals = {};
-
-  transactions
-    .filter(t => t.type === "expense")
-    .forEach(t => {
-      totals[t.category] = (totals[t.category] || 0) + t.amount;
-    });
-
-  const categories = Object.entries(totals)
-    .sort((a, b) => b[1] - a[1]);
-
-  if (categories.length === 0) {
-    const message = document.createElement("p");
-    message.className = "chart-empty";
-    message.textContent = "No expenses yet. Add an expense to see your chart.";
-    chart.append(message);
-    return;
-  }
-
-  const maxAmount = Math.max(...categories.map(item => item[1]));
-
-  categories.forEach(([category, amount]) => {
-    const row = document.createElement("div");
-    row.className = "chart-row";
-
-    const label = document.createElement("div");
-    label.className = "chart-label";
-
-    const name = document.createElement("span");
-    name.textContent = category;
-
-    const value = document.createElement("strong");
-    value.textContent = "₹" + amount.toFixed(2);
-
-    label.append(name, value);
-
-    const track = document.createElement("div");
-    track.className = "chart-track";
-
-    const bar = document.createElement("div");
-    bar.className = "chart-bar";
-    bar.style.width = (amount / maxAmount * 100) + "%";
-
-    track.append(bar);
-    row.append(label, track);
-    chart.append(row);
-  });
-}
-
-  function render() {
-  renderChart();
-
-  const income = transactions
-        .filter(t => t.type === "income")
-        .reduce((sum, t) => sum + t.amount, 0);
-
-      const expenses = transactions
-        .filter(t => t.type === "expense")
-        .reduce((sum, t) => sum + t.amount, 0);
-
-      document.getElementById("income").textContent =
-        "₹" + income.toFixed(2);
-      document.getElementById("expenses").textContent =
-        "₹" + expenses.toFixed(2);
-      document.getElementById("balance").textContent =
-        "₹" + (income - expenses).toFixed(2);
-
-      list.replaceChildren();
-
-      if (transactions.length === 0) {
-        list.textContent = "No transactions yet.";
-        return;
+      function getToday() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
       }
 
-      [...transactions].reverse().forEach(t => {
-        const row = document.createElement("div");
-        row.className = "transaction";
+      dateInput.value = getToday();
 
-        const details = document.createElement("div");
-        const title = document.createElement("strong");
-        title.textContent = t.description;
+      // Load previously saved transactions.
+      let transactions = [];
 
-        const info = document.createElement("div");
-        info.textContent = `${t.category} • ${t.date}`;
+      try {
+        const saved = JSON.parse(
+          localStorage.getItem("myExpenseData") || "[]"
+        );
 
-        details.append(title, info);
+        if (Array.isArray(saved)) {
+          transactions = saved
+            .filter(t =>
+              t &&
+              typeof t.description === "string" &&
+              Number.isFinite(Number(t.amount)) &&
+              Number(t.amount) > 0 &&
+              ["income", "expense"].includes(t.type)
+            )
+            .map(t => ({
+              ...t,
+              amount: Number(t.amount),
+              category: t.category || "Other",
+              date: t.date || getToday(),
+              id: t.id || crypto.randomUUID()
+            }));
+        }
+      } catch (error) {
+        transactions = [];
+      }
 
-        const amount = document.createElement("span");
-        amount.className = t.type;
-        amount.textContent =
-          (t.type === "income" ? "+" : "-") + "₹" + t.amount.toFixed(2);
+      const colors = {
+        Food: "#5271e8",
+        Travel: "#f39c45",
+        Education: "#24a879",
+        Shopping: "#9666dc",
+        Bills: "#e65b69",
+        Salary: "#20a6b5",
+        Other: "#9aa4b2"
+      };
 
-        const remove = document.createElement("button");
-        remove.textContent = "Delete";
-        remove.type = "button";
-        remove.addEventListener("click", () => {
-          transactions = transactions.filter(item => item.id !== t.id);
-          save();
+      function getColor(category) {
+        if (colors[category]) {
+          return colors[category];
+        }
+
+        const palette = [
+          "#5271e8",
+          "#f39c45",
+          "#24a879",
+          "#9666dc",
+          "#e65b69",
+          "#20a6b5"
+        ];
+
+        let hash = 0;
+
+        for (let i = 0; i < category.length; i++) {
+          hash = category.charCodeAt(i) + ((hash << 5) - hash);
+        }
+
+        return palette[Math.abs(hash) % palette.length];
+      }
+
+      // Render a round pie chart using CSS conic-gradient.
+      function renderChart() {
+        chart.replaceChildren();
+
+        const totals = {};
+        const currentMonth = getToday().slice(0, 7);
+
+        transactions
+          .filter(t =>
+            t.type === "expense" &&
+            typeof t.date === "string" &&
+            t.date.slice(0, 7) === currentMonth
+          )
+          .forEach(t => {
+            const category = t.category || "Other";
+            totals[category] =
+              (totals[category] || 0) + Number(t.amount);
+          });
+
+        const categories = Object.entries(totals)
+          .filter(([, amount]) => amount > 0)
+          .sort((a, b) => b[1] - a[1]);
+
+        const total = categories.reduce(
+          (sum, item) => sum + item[1], 0
+        );
+
+        if (categories.length === 0 || total === 0) {
+          const message = document.createElement("p");
+          message.className = "chart-empty";
+          message.textContent =
+            "No expenses this month. Add an expense to see your pie chart.";
+
+          chart.appendChild(message);
+          return;
+        }
+
+        let angle = 0;
+        const slices = [];
+
+        categories.forEach(([category, amount]) => {
+          const percentage = (amount / total) * 100;
+          const endAngle = angle + percentage * 3.6;
+
+          slices.push(
+            `${getColor(category)} ${angle}deg ${endAngle}deg`
+          );
+
+          angle = endAngle;
         });
 
-        row.append(details, amount, remove);
-        list.append(row);
-      });
-    }
+        const layout = document.createElement("div");
+        layout.className = "chart-layout";
 
-    function save() {
-      localStorage.setItem("myExpenseData", JSON.stringify(transactions));
-      render();
-    }
+        const pie = document.createElement("div");
+        pie.className = "pie-chart";
+        pie.style.background =
+          `conic-gradient(${slices.join(", ")})`;
 
-    form.addEventListener("submit", event => {
-      event.preventDefault();
+        pie.setAttribute("role", "img");
+        pie.setAttribute(
+          "aria-label",
+          "Pie chart of monthly expenses by category"
+        );
 
-      const amount = Number(document.getElementById("amount").value);
-      const description = document.getElementById("description").value.trim();
+        const legend = document.createElement("div");
+        legend.className = "chart-legend";
 
-      if (!description || !Number.isFinite(amount) || amount <= 0) {
-        alert("Enter a description and a valid positive amount.");
-        return;
+        categories.forEach(([category, amount]) => {
+          const percentage = (amount / total) * 100;
+
+          const item = document.createElement("div");
+          item.className = "legend-item";
+
+          const colorBox = document.createElement("span");
+          colorBox.className = "legend-color";
+          colorBox.style.backgroundColor = getColor(category);
+
+          const details = document.createElement("div");
+          details.className = "legend-details";
+
+          const name = document.createElement("span");
+          name.className = "legend-name";
+          name.textContent = category;
+
+          const percent = document.createElement("span");
+          percent.className = "legend-percentage";
+          percent.textContent = `${percentage.toFixed(1)}%`;
+
+          const value = document.createElement("span");
+          value.className = "legend-amount";
+          value.textContent = "₹" + amount.toFixed(2);
+
+          details.append(name, percent);
+          item.append(colorBox, details, value);
+          legend.appendChild(item);
+        });
+
+        layout.append(pie, legend);
+        chart.appendChild(layout);
+
+        const totalBox = document.createElement("div");
+        totalBox.className = "chart-total";
+        totalBox.textContent = "Total expenses this month";
+
+        const totalValue = document.createElement("strong");
+        totalValue.textContent = "₹" + total.toFixed(2);
+
+        totalBox.appendChild(totalValue);
+        chart.appendChild(totalBox);
       }
 
-      transactions.push({
-        id: crypto.randomUUID(),
-        description,
-        amount,
-        type: document.getElementById("type").value,
-        category: document.getElementById("category").value,
-        date: dateInput.value
+      function render() {
+        renderChart();
+
+        const income = transactions
+          .filter(t => t.type === "income")
+          .reduce((sum, t) => sum + Number(t.amount), 0);
+
+        const expenses = transactions
+          .filter(t => t.type === "expense")
+          .reduce((sum, t) => sum + Number(t.amount), 0);
+
+        document.getElementById("income").textContent =
+          "₹" + income.toFixed(2);
+
+        document.getElementById("expenses").textContent =
+          "₹" + expenses.toFixed(2);
+
+        document.getElementById("balance").textContent =
+          "₹" + (income - expenses).toFixed(2);
+
+        list.replaceChildren();
+
+        if (transactions.length === 0) {
+          list.textContent = "No transactions yet.";
+          return;
+        }
+
+        [...transactions].reverse().forEach(t => {
+          const row = document.createElement("div");
+          row.className = "transaction";
+
+          const details = document.createElement("div");
+          details.className = "transaction-details";
+
+          const title = document.createElement("strong");
+          title.textContent = t.description;
+
+          const info = document.createElement("div");
+          info.textContent = `${t.category} • ${t.date}`;
+
+          details.append(title, info);
+
+          const amount = document.createElement("span");
+          amount.className = t.type;
+          amount.textContent =
+            (t.type === "income" ? "+" : "-") +
+            "₹" + Number(t.amount).toFixed(2);
+
+          const remove = document.createElement("button");
+          remove.type = "button";
+          remove.textContent = "Delete";
+
+          remove.addEventListener("click", () => {
+            transactions = transactions.filter(
+              item => item.id !== t.id
+            );
+            save();
+          });
+
+          row.append(details, amount, remove);
+          list.appendChild(row);
+        });
+      }
+
+      function save() {
+        localStorage.setItem(
+          "myExpenseData",
+          JSON.stringify(transactions)
+        );
+        render();
+      }
+
+      form.addEventListener("submit", event => {
+        event.preventDefault();
+
+        const description =
+          document.getElementById("description").value.trim();
+
+        const amount =
+          Number(document.getElementById("amount").value);
+
+        if (
+          !description ||
+          !Number.isFinite(amount) ||
+          amount <= 0 ||
+          !dateInput.value
+        ) {
+          alert("Enter a description, valid amount and date.");
+          return;
+        }
+
+        transactions.push({
+          id: crypto.randomUUID(),
+          description,
+          amount,
+          type: document.getElementById("type").value,
+          category: document.getElementById("category").value,
+          date: dateInput.value
+        });
+
+        save();
+
+        form.reset();
+        dateInput.value = getToday();
       });
 
-      save();
-      form.reset();
-      dateInput.value = new Date().toLocaleDateString("en-CA");
-    });
-
-    render();
+      render();
+    })();
   </script>
 </body>
 </html>
+```
