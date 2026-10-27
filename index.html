@@ -166,7 +166,6 @@
     );
 
 function renderChart() {
-  renderChart();
   const chart = document.getElementById("expenseChart");
   chart.replaceChildren();
 
@@ -219,8 +218,10 @@ function renderChart() {
   });
 }
 
-    function render() {
-      const income = transactions
+  function render() {
+  renderChart();
+
+  const income = transactions
         .filter(t => t.type === "income")
         .reduce((sum, t) => sum + t.amount, 0);
 
