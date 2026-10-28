@@ -5,7 +5,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Expense Tracker</title>
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -51,7 +50,8 @@
       background: white;
       padding: 23px;
       border-radius: 14px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      min-width: 0;
     }
 
     .card p {
@@ -63,17 +63,9 @@
       font-size: 27px;
     }
 
-    .income {
-      color: #16a36a;
-    }
-
-    .expense {
-      color: #e34d59;
-    }
-
-    .balance {
-      color: #5264d8;
-    }
+    .income { color: #16a36a; }
+    .expense { color: #e34d59; }
+    .balance { color: #5264d8; }
 
     .main-grid {
       display: grid;
@@ -117,8 +109,13 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: bold;
+    }
+
+    button:focus-visible {
+      outline: 2px solid #252b42;
+      outline-offset: 2px;
     }
 
     .add-btn {
@@ -139,7 +136,8 @@
       margin: 0 auto;
     }
 
-    .transactions {
+    .transactions,
+    .reminder-table-wrap {
       overflow-x: auto;
     }
 
@@ -153,6 +151,7 @@
       text-align: left;
       padding: 14px 10px;
       border-bottom: 1px solid #eee;
+      vertical-align: top;
     }
 
     th {
@@ -170,10 +169,17 @@
       font-weight: bold;
     }
 
-    .delete-btn {
+    .delete-btn,
+    .reminder-delete-btn {
       background: #fff0f0;
       color: #d63d48;
-      padding: 8px 11px;
+      padding: 8px 10px;
+    }
+
+    .clear-btn {
+      background: #fff0f0;
+      color: #d63d48;
+      margin-bottom: 15px;
     }
 
     .empty {
@@ -182,10 +188,76 @@
       padding: 25px;
     }
 
-    .clear-btn {
-      background: #fff0f0;
-      color: #d63d48;
-      margin-bottom: 15px;
+    .reminder-section {
+      margin-bottom: 22px;
+    }
+
+    .reminder-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin: 18px 0;
+    }
+
+    .reminder-stat {
+      background: #f7f8ff;
+      border: 1px solid #eceeff;
+      border-radius: 10px;
+      padding: 15px;
+    }
+
+    .reminder-stat p {
+      color: #777;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .reminder-stat strong {
+      font-size: 20px;
+    }
+
+    .reminder-grid {
+      display: grid;
+      grid-template-columns: 0.85fr 1.15fr;
+      gap: 22px;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 6px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .status-upcoming {
+      color: #946200;
+      background: #fff3cd;
+    }
+
+    .status-overdue {
+      color: #b42318;
+      background: #fee4e2;
+    }
+
+    .status-paid {
+      color: #067647;
+      background: #d1fadf;
+    }
+
+    .paid-btn {
+      background: #e7f8ee;
+      color: #087443;
+      padding: 8px 10px;
+      margin: 2px;
+    }
+
+    .reminder-note {
+      color: #777;
+      font-size: 13px;
+      margin-top: 10px;
+      line-height: 1.5;
     }
 
     @media (max-width: 700px) {
@@ -197,12 +269,10 @@
         font-size: 25px;
       }
 
-      .summary {
-        grid-template-columns: 1fr;
-        gap: 12px;
-      }
-
-      .main-grid {
+      .summary,
+      .main-grid,
+      .reminder-grid,
+      .reminder-summary {
         grid-template-columns: 1fr;
       }
 
@@ -221,6 +291,7 @@
       <p>Manage your income and expenses easily.</p>
     </header>
 
+    <!-- Financial Summary -->
     <section class="summary">
       <div class="card">
         <p>Total Income</p>
@@ -238,8 +309,8 @@
       </div>
     </section>
 
+    <!-- Add Transaction and Pie Chart -->
     <section class="main-grid">
-
       <div class="card">
         <h3>Add Transaction</h3>
 
@@ -302,9 +373,7 @@
 
       <div class="card">
         <h3>Expense Breakdown</h3>
-        <p style="color:#777; margin-bottom:15px;">
-          Category-wise spending
-        </p>
+        <p>Category-wise spending</p>
 
         <div class="chart-container">
           <canvas id="expenseChart"></canvas>
@@ -314,61 +383,188 @@
           Add expenses to see your pie chart.
         </p>
       </div>
-
     </section>
 
-    <section class="card">
-      <h3>Recent Transactions</h3>
+    <!-- Bill and EMI Reminder -->
+    <section class="card reminder-section">
+      <h3>📅 Bill &amp; EMI Reminder</h3>
+      <p>Keep track of bills, EMI payments and due dates.</p>
 
-      <button class="clear-btn" id="clearBtn" type="button">
+      <div class="reminder-summary">
+        <div class="reminder-stat">
+          <p>Pending Amount</p>
+          <strong id="pendingBillsAmount">₹0.00</strong>
+        </div>
+
+        <div class="reminder-stat">
+          <p>Due in 7 Days</p>
+          <strong id="dueSoonCount">0</strong>
+        </div>
+
+        <div class="reminder-stat">
+          <p>Overdue Payments</p>
+          <strong id="overdueCount">0</strong>
+        </div>
+      </div>
+
+      <div class="reminder-grid">
+        <div>
+          <h3>Add a Bill / EMI</h3>
+
+          <form id="reminderForm">
+            <div class="form-group">
+              <label for="reminderName">Bill / EMI Name</label>
+              <input
+                id="reminderName"
+                type="text"
+                placeholder="e.g. Phone EMI, Electricity Bill"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="reminderAmount">Amount (₹)</label>
+              <input
+                id="reminderAmount"
+                type="number"
+                min="0.01"
+                step="0.01"
+                placeholder="Enter amount"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="reminderType">Payment Type</label>
+              <select id="reminderType" required>
+                <option value="Bill">Bill</option>
+                <option value="EMI">EMI</option>
+                <option value="Fees">Fees</option>
+                <option value="Subscription">Subscription</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="reminderDueDate">Due Date</label>
+              <input id="reminderDueDate" type="date" required>
+            </div>
+
+            <div class="form-group">
+              <label for="reminderNote">Note (optional)</label>
+              <input
+                id="reminderNote"
+                type="text"
+                placeholder="Add a short note"
+              >
+            </div>
+
+            <button type="submit" class="add-btn">
+              + Add Reminder
+            </button>
+          </form>
+
+          <p class="reminder-note">
+            Reminders are stored in this browser. Open the website to
+            check your payment status. Automatic background notifications
+            are not included in this version.
+          </p>
+        </div>
+
+        <div>
+          <h3>Your Bills &amp; EMIs</h3>
+
+          <div class="reminder-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Due Date</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="reminderList"></tbody>
+            </table>
+
+            <p id="noReminders" class="empty">
+              No bills or EMI reminders added yet.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Transaction History -->
+    <section class="card transactions">
+      <h3>Transaction History</h3>
+
+      <button type="button" class="clear-btn" id="clearBtn">
         Clear All Transactions
       </button>
 
-      <div class="transactions">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Category</th>
-              <th>Date</th>
-              <th>Type</th>
-              <th>Amount</th>
-              <th>Action</th>
-            </tr>
-          </thead>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="transactionList"></tbody>
+      </table>
 
-          <tbody id="transactionList"></tbody>
-        </table>
-
-        <p id="emptyMessage" class="empty">
-          No transactions yet. Add your first transaction!
-        </p>
-      </div>
+      <p id="emptyMessage" class="empty">
+        No transactions yet. Add your first transaction above.
+      </p>
     </section>
 
   </div>
 
   <script>
+    // ---------- COMMON FUNCTIONS ----------
+
+    function money(amount) {
+      return Number(amount).toLocaleString("en-IN", {
+        style: "currency",
+        currency: "INR",
+        minimumFractionDigits: 2
+      });
+    }
+
+    function getLocalDateString(date = new Date()) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    // ---------- EXPENSE TRACKER ----------
+
     const form = document.getElementById("transactionForm");
     const titleInput = document.getElementById("title");
     const amountInput = document.getElementById("amount");
     const typeInput = document.getElementById("type");
     const categoryInput = document.getElementById("category");
     const dateInput = document.getElementById("date");
-
     const transactionList = document.getElementById("transactionList");
     const emptyMessage = document.getElementById("emptyMessage");
-    const chartMessage = document.getElementById("chartMessage");
+
+    dateInput.value = getLocalDateString();
 
     let transactions = [];
 
     try {
-      const saved = JSON.parse(
+      const savedTransactions = JSON.parse(
         localStorage.getItem("expenseTrackerTransactions") || "[]"
       );
 
-      if (Array.isArray(saved)) {
-        transactions = saved.filter(t =>
+      if (Array.isArray(savedTransactions)) {
+        transactions = savedTransactions.filter(t =>
           t &&
           typeof t.id === "number" &&
           typeof t.title === "string" &&
@@ -383,14 +579,6 @@
       transactions = [];
     }
 
-    dateInput.value = new Date().toLocaleDateString("en-CA");
-
-    const money = amount =>
-      "₹" + Number(amount).toLocaleString("en-IN", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
-
     function saveTransactions() {
       localStorage.setItem(
         "expenseTrackerTransactions",
@@ -398,99 +586,76 @@
       );
     }
 
-    const chartColors = [
-      "#5865d9",
-      "#f59e0b",
-      "#16a36a",
-      "#e34d59",
-      "#8b5cf6",
-      "#06b6d4",
-      "#ec4899",
-      "#64748b",
-      "#a3a3a3"
-    ];
-
     let expenseChart = null;
 
-    if (typeof Chart !== "undefined") {
-      expenseChart = new Chart(
-        document.getElementById("expenseChart"),
-        {
-          type: "pie",
-          data: {
-            labels: [],
-            datasets: [{
-              data: [],
-              backgroundColor: chartColors,
-              borderColor: "#ffffff",
-              borderWidth: 3,
-              hoverOffset: 8
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: "bottom",
-                labels: {
-                  padding: 15,
-                  usePointStyle: true
-                }
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    const values = context.dataset.data;
-                    const total = values.reduce(
-                      (sum, value) => sum + value, 0
-                    );
-                    const value = context.raw;
-                    const percentage = total
-                      ? ((value / total) * 100).toFixed(1)
-                      : "0.0";
+    function updateChart() {
+      const expenseData = {};
 
-                    return context.label + ": " +
-                      money(value) + " (" + percentage + "%)";
-                  }
+      transactions
+        .filter(t => t.type === "expense")
+        .forEach(t => {
+          expenseData[t.category] =
+            (expenseData[t.category] || 0) + Number(t.amount);
+        });
+
+      const labels = Object.keys(expenseData);
+      const values = Object.values(expenseData);
+
+      const canvas = document.getElementById("expenseChart");
+      const chartMessage = document.getElementById("chartMessage");
+
+      if (expenseChart) {
+        expenseChart.destroy();
+        expenseChart = null;
+      }
+
+      if (labels.length === 0) {
+        canvas.style.display = "none";
+        chartMessage.style.display = "block";
+        return;
+      }
+
+      canvas.style.display = "block";
+      chartMessage.style.display = "none";
+
+      expenseChart = new Chart(canvas, {
+        type: "pie",
+        data: {
+          labels: labels,
+          datasets: [{
+            data: values,
+            backgroundColor: [
+              "#5865d9",
+              "#16a36a",
+              "#e34d59",
+              "#f4b942",
+              "#26a6a1",
+              "#a56de2",
+              "#f08c46",
+              "#5c8bd6",
+              "#e879b9"
+            ],
+            borderColor: "#ffffff",
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "bottom"
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.label + ": " + money(context.raw);
                 }
               }
             }
           }
         }
-      );
-    }
-
-    function updateChart() {
-      const totals = {};
-
-      transactions
-        .filter(t => t.type === "expense")
-        .forEach(t => {
-          totals[t.category] =
-            (totals[t.category] || 0) + Number(t.amount);
-        });
-
-      const labels = Object.keys(totals);
-      const values = Object.values(totals);
-
-      if (expenseChart) {
-        expenseChart.data.labels = labels;
-        expenseChart.data.datasets[0].data = values;
-        expenseChart.update();
-      }
-
-      document.querySelector(".chart-container").style.display =
-        labels.length ? "block" : "none";
-
-      chartMessage.style.display =
-        labels.length ? "none" : "block";
-
-      if (!expenseChart) {
-        chartMessage.textContent =
-          "Chart library could not load. Check your internet connection.";
-        chartMessage.style.display = "block";
-      }
+      });
     }
 
     function renderTransactions() {
@@ -533,6 +698,7 @@
         addCell(t.title);
         addCell(t.category);
         addCell(t.date);
+
         addCell(
           t.type === "income" ? "Income" : "Expense",
           t.type === "income" ? "type-income" : "type-expense"
@@ -546,9 +712,9 @@
         const actionCell = document.createElement("td");
         const deleteButton = document.createElement("button");
 
+        deleteButton.type = "button";
         deleteButton.textContent = "Delete";
         deleteButton.className = "delete-btn";
-        deleteButton.type = "button";
 
         deleteButton.addEventListener("click", () => {
           transactions = transactions.filter(item => item.id !== t.id);
@@ -587,9 +753,9 @@
 
       saveTransactions();
       renderTransactions();
-      form.reset();
 
-      dateInput.value = new Date().toLocaleDateString("en-CA");
+      form.reset();
+      dateInput.value = getLocalDateString();
       typeInput.value = "expense";
     });
 
@@ -606,7 +772,255 @@
       }
     });
 
+    // ---------- BILL & EMI REMINDER ----------
+
+    const reminderForm = document.getElementById("reminderForm");
+    const reminderList = document.getElementById("reminderList");
+    const noReminders = document.getElementById("noReminders");
+    const reminderDueDateInput =
+      document.getElementById("reminderDueDate");
+
+    reminderDueDateInput.value = getLocalDateString();
+
+    let reminders = [];
+
+    try {
+      const savedReminders = JSON.parse(
+        localStorage.getItem("expenseTrackerBillReminders") || "[]"
+      );
+
+      if (Array.isArray(savedReminders)) {
+        reminders = savedReminders.filter(item =>
+          item &&
+          typeof item.id === "number" &&
+          typeof item.name === "string" &&
+          Number.isFinite(Number(item.amount)) &&
+          Number(item.amount) > 0 &&
+          typeof item.dueDate === "string" &&
+          ["pending", "paid"].includes(item.status)
+        );
+      }
+    } catch (error) {
+      reminders = [];
+    }
+
+    function saveReminders() {
+      localStorage.setItem(
+        "expenseTrackerBillReminders",
+        JSON.stringify(reminders)
+      );
+    }
+
+    function getReminderStatus(reminder) {
+      if (reminder.status === "paid") {
+        return {
+          label: "Paid",
+          className: "status-paid"
+        };
+      }
+
+      if (reminder.dueDate < getLocalDateString()) {
+        return {
+          label: "Overdue",
+          className: "status-overdue"
+        };
+      }
+
+      return {
+        label: "Pending",
+        className: "status-upcoming"
+      };
+    }
+
+    function renderReminders() {
+      reminderList.replaceChildren();
+
+      const today = getLocalDateString();
+      const nextWeekDate = new Date();
+      nextWeekDate.setDate(nextWeekDate.getDate() + 7);
+      const nextWeek = getLocalDateString(nextWeekDate);
+
+      const pending = reminders.filter(
+        item => item.status !== "paid"
+      );
+
+      const pendingAmount = pending.reduce(
+        (sum, item) => sum + Number(item.amount),
+        0
+      );
+
+      const dueSoon = pending.filter(item =>
+        item.dueDate >= today && item.dueDate <= nextWeek
+      ).length;
+
+      const overdue = pending.filter(
+        item => item.dueDate < today
+      ).length;
+
+      document.getElementById("pendingBillsAmount").textContent =
+        money(pendingAmount);
+
+      document.getElementById("dueSoonCount").textContent = dueSoon;
+      document.getElementById("overdueCount").textContent = overdue;
+
+      noReminders.style.display =
+        reminders.length ? "none" : "block";
+
+      const sortedReminders = [...reminders].sort((a, b) => {
+        if (a.status !== b.status) {
+          return a.status === "paid" ? 1 : -1;
+        }
+
+        return a.dueDate.localeCompare(b.dueDate);
+      });
+
+      sortedReminders.forEach(reminder => {
+        const row = document.createElement("tr");
+        const status = getReminderStatus(reminder);
+
+        function addCell(value) {
+          const cell = document.createElement("td");
+          cell.textContent = value;
+          row.appendChild(cell);
+          return cell;
+        }
+
+        const nameCell = addCell(reminder.name);
+        const details = document.createElement("div");
+
+        details.style.cssText =
+          "color:#777;font-size:12px;margin-top:4px;";
+
+        details.textContent =
+          `${reminder.type || "Bill"}${
+            reminder.note ? " · " + reminder.note : ""
+          }`;
+
+        nameCell.appendChild(details);
+
+        addCell(reminder.dueDate);
+        addCell(money(reminder.amount));
+
+        const statusCell = document.createElement("td");
+        const pill = document.createElement("span");
+
+        pill.className = "status-pill " + status.className;
+        pill.textContent = status.label;
+
+        statusCell.appendChild(pill);
+        row.appendChild(statusCell);
+
+        const actionCell = document.createElement("td");
+
+        if (reminder.status !== "paid") {
+          const paidButton = document.createElement("button");
+
+          paidButton.type = "button";
+          paidButton.className = "paid-btn";
+          paidButton.textContent = "Mark Paid";
+
+          paidButton.addEventListener("click", () => {
+            if (!confirm(`Mark "${reminder.name}" as paid?`)) return;
+
+            reminder.status = "paid";
+            reminder.paidAt = getLocalDateString();
+
+            saveReminders();
+            renderReminders();
+          });
+
+          actionCell.appendChild(paidButton);
+        } else {
+          const undoButton = document.createElement("button");
+
+          undoButton.type = "button";
+          undoButton.className = "paid-btn";
+          undoButton.textContent = "Undo";
+
+          undoButton.addEventListener("click", () => {
+            reminder.status = "pending";
+            delete reminder.paidAt;
+
+            saveReminders();
+            renderReminders();
+          });
+
+          actionCell.appendChild(undoButton);
+        }
+
+        const deleteButton = document.createElement("button");
+
+        deleteButton.type = "button";
+        deleteButton.className = "reminder-delete-btn";
+        deleteButton.textContent = "Delete";
+
+        deleteButton.addEventListener("click", () => {
+          if (!confirm(`Delete reminder "${reminder.name}"?`)) return;
+
+          reminders = reminders.filter(
+            item => item.id !== reminder.id
+          );
+
+          saveReminders();
+          renderReminders();
+        });
+
+        actionCell.appendChild(deleteButton);
+        row.appendChild(actionCell);
+        reminderList.appendChild(row);
+      });
+    }
+
+    reminderForm.addEventListener("submit", event => {
+      event.preventDefault();
+
+      const name = document
+        .getElementById("reminderName")
+        .value.trim();
+
+      const amount = Number(
+        document.getElementById("reminderAmount").value
+      );
+
+      const type = document.getElementById("reminderType").value;
+      const dueDate = reminderDueDateInput.value;
+
+      const note = document
+        .getElementById("reminderNote")
+        .value.trim();
+
+      if (
+        !name ||
+        !Number.isFinite(amount) ||
+        amount <= 0 ||
+        !dueDate
+      ) {
+        alert("Please enter a valid name, amount and due date.");
+        return;
+      }
+
+      reminders.push({
+        id: Date.now(),
+        name,
+        amount,
+        type,
+        dueDate,
+        note,
+        status: "pending"
+      });
+
+      saveReminders();
+      renderReminders();
+
+      reminderForm.reset();
+      reminderDueDateInput.value = getLocalDateString();
+      document.getElementById("reminderType").value = "Bill";
+    });
+
+    // ---------- INITIAL PAGE LOAD ----------
+
     renderTransactions();
+    renderReminders();
   </script>
 </body>
 </html>
